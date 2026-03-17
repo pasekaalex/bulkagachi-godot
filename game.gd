@@ -27,20 +27,22 @@ var total_plays = 0
 var total_feeds = 0
 var total_cleans = 0
 
-var pet_sprite
 var bg_sprite
+var pet_sprite
 var title_label
-var age_label
 var stage_label
-var egg_label
-var stats_labels = []
+var age_label
+var stats_container
 var stats_bars = []
-var xp_label
+var stats_labels = []
 var message_label
 var location_btn
 var evolve_btn
 var location_menu
 var buttons = []
+var collection_btn
+var collection_panel
+var collection_labels = []
 
 const SPRITE_PATH = "res://assets/sprites/"
 
@@ -59,8 +61,7 @@ func _process(delta):
 		var now = Time.get_unix_time_from_system()
 		if now >= egg_hatch_time:
 			_hatch_egg()
-		pet_sprite.position.y = 250 + sin(now * 3) * 5
-		egg_label.text = "Hatching in %d min..." % max(0, ceil((egg_hatch_time - now) / 60.0))
+		pet_sprite.position.y = 280 + sin(now * 3) * 5
 		return
 	
 	age_minutes = int((Time.get_unix_time_from_system() - birth_time) / 60)
@@ -71,149 +72,183 @@ func _process(delta):
 	_save_game()
 
 func _build_ui():
-	# Background - cover screen
+	# Background
 	bg_sprite = Sprite2D.new()
-	bg_sprite.position = Vector2(270, 400)
-	bg_sprite.scale = Vector2(0.85, 0.85)
+	bg_sprite.position = Vector2(180, 280)
+	bg_sprite.scale = Vector2(0.55, 0.55)
 	add_child(bg_sprite)
 	_load_bg()
 	
 	# Title
 	title_label = Label.new()
 	title_label.text = "BULKAGACHI"
-	title_label.position = Vector2(10, 10)
-	title_label.add_theme_font_size_override("font_size", 18)
+	title_label.position = Vector2(80, 8)
+	title_label.add_theme_font_size_override("font_size", 22)
 	add_child(title_label)
 	
 	# Stage
 	stage_label = Label.new()
-	stage_label.position = Vector2(430, 10)
+	stage_label.text = "LV 1"
+	stage_label.position = Vector2(280, 8)
 	stage_label.add_theme_font_size_override("font_size", 12)
 	add_child(stage_label)
 	
 	# Age
 	age_label = Label.new()
+	age_label.text = "Age: 0h"
 	age_label.position = Vector2(10, 32)
-	age_label.add_theme_font_size_override("font_size", 12)
+	age_label.add_theme_font_size_override("font_size", 11)
 	add_child(age_label)
 	
-	# Stats
-	var stat_data = [
-		["🍗", Vector2(10, 50), Color(1, 0.6, 0.4)],
-		["💛", Vector2(100, 50), Color(1, 0.5, 0.6)],
-		["✨", Vector2(190, 50), Color(0.5, 0.9, 1)],
-		["⚡", Vector2(280, 50), Color(1, 0.9, 0.4)]
-	]
-	for i in range(stat_data.size()):
-		var d = stat_data[i]
-		# Bar background
-		var bar_bg = ColorRect.new()
-		bar_bg.color = Color(0.2, 0.2, 0.2)
-		bar_bg.position = Vector2(d[1].x, d[1].y + 15)
-		bar_bg.size = Vector2(80, 8)
-		add_child(bar_bg)
-		# Bar fill
-		var bar = ColorRect.new()
-		bar.color = d[2]
-		bar.position = Vector2(d[1].x, d[1].y + 15)
-		bar.size = Vector2(80, 8)
-		add_child(bar)
-		stats_bars.append(bar)
-		# Label
-		var lbl = Label.new()
-		lbl.text = d[0] + " 100"
-		lbl.position = Vector2(d[1].x, d[1].y - 5)
-		lbl.add_theme_font_size_override("font_size", 12)
-		lbl.modulate = d[2]
-		add_child(lbl)
-		stats_labels.append(lbl)
+	# Stats container
+	stats_container = VBoxContainer.new()
+	stats_container.position = Vector2(10, 100)
+	stats_container.add_theme_constant_override("separation", 8)
+	add_child(stats_container)
 	
-	# XP
-	xp_label = Label.new()
-	xp_label.text = "XP: 0/75"
-	xp_label.position = Vector2(370, 55)
-	xp_label.add_theme_font_size_override("font_size", 10)
-	add_child(xp_label)
+	# Create 4 stat rows
+	var stat_info = [
+		["HUNGER", "🍗", Color(1, 0.5, 0.3)],
+		["HAPPY", "💛", Color(1, 0.4, 0.5)],
+		["CLEAN", "✨", Color(0.4, 0.8, 1)],
+		["ENERGY", "⚡", Color(1, 0.85, 0.3)]
+	]
+	for info in stat_info:
+		var row = HBoxContainer.new()
+		row.custom_minimum_size = Vector2(340, 20)
+		stats_container.add_child(row)
+		
+		var name_lbl = Label.new()
+		name_lbl.text = info[0] + " "
+		name_lbl.custom_minimum_size = Vector2(60, 0)
+		name_lbl.add_theme_font_size_override("font_size", 10)
+		row.add_child(name_lbl)
+		
+		var bar_bg = ColorRect.new()
+		bar_bg.color = Color(0.15, 0.15, 0.2)
+		bar_bg.custom_minimum_size = Vector2(200, 14)
+		row.add_child(bar_bg)
+		
+		var bar_fill = ColorRect.new()
+		bar_fill.color = info[2]
+		bar_fill.custom_minimum_size = Vector2(200, 14)
+		bar_bg.add_child(bar_fill)
+		stats_bars.append(bar_fill)
+		
+		var val_lbl = Label.new()
+		val_lbl.text = "100%"
+		val_lbl.custom_minimum_size = Vector2(40, 0)
+		val_lbl.add_theme_font_size_override("font_size", 10)
+		row.add_child(val_lbl)
+		stats_labels.append(val_lbl)
 	
 	# Location button
 	location_btn = Button.new()
-	location_btn.text = "📍"
+	location_btn.text = "📍 CABIN"
 	location_btn.position = Vector2(10, 75)
-	location_btn.size = Vector2(50, 25)
+	location_btn.size = Vector2(90, 22)
 	location_btn.pressed.connect(_show_location_menu)
 	add_child(location_btn)
 	
-	# Evolve button
-	evolve_btn = Button.new()
-	evolve_btn.text = "EVOLVE"
-	evolve_btn.position = Vector2(430, 75)
-	evolve_btn.size = Vector2(60, 25)
-	evolve_btn.visible = false
-	evolve_btn.pressed.connect(_on_evolve_pressed)
-	add_child(evolve_btn)
+	# Collection button
+	collection_btn = Button.new()
+	collection_btn.text = "📊"
+	collection_btn.position = Vector2(280, 75)
+	collection_btn.size = Vector2(30, 22)
+	collection_btn.pressed.connect(_toggle_collection)
+	add_child(collection_btn)
+	
+	# Collection panel (hidden)
+	collection_panel = PanelContainer.new()
+	collection_panel.position = Vector2(10, 50)
+	collection_panel.size = Vector2(340, 60)
+	collection_panel.visible = false
+	add_child(collection_panel)
+	var col_vbox = VBoxContainer.new()
+	collection_panel.add_child(col_vbox)
+	var col_items = ["Fed: 0", "Played: 0", "Cleaned: 0", "Golden: 0", "Lv: 1"]
+	for item in col_items:
+		var l = Label.new()
+		l.text = item
+		l.add_theme_font_size_override("font_size", 10)
+		col_vbox.add_child(l)
+		collection_labels.append(l)
 	
 	# Location menu (hidden)
 	location_menu = VBoxContainer.new()
-	location_menu.position = Vector2(10, 100)
+	location_menu.position = Vector2(10, 98)
 	location_menu.visible = false
 	add_child(location_menu)
 	var locs = ["cabin", "camp", "city", "beach", "mountain", "club"]
 	for loc in locs:
-		var btn = Button.new()
-		btn.text = "📍 " + loc
-		btn.size = Vector2(80, 25)
-		btn.pressed.connect(func(): _set_location(loc))
-		location_menu.add_child(btn)
+		var b = Button.new()
+		b.text = "📍 " + loc.to_upper()
+		b.size = Vector2(90, 22)
+		b.pressed.connect(func(): _set_location(loc))
+		location_menu.add_child(b)
 	
-	# Egg label
-	egg_label = Label.new()
-	egg_label.text = "Tap egg..."
-	egg_label.position = Vector2(150, 180)
-	egg_label.add_theme_font_size_override("font_size", 14)
-	egg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	add_child(egg_label)
+	# Evolve button
+	evolve_btn = Button.new()
+	evolve_btn.text = "✨ EVOLVE"
+	evolve_btn.position = Vector2(200, 75)
+	evolve_btn.size = Vector2(70, 22)
+	evolve_btn.visible = false
+	evolve_btn.pressed.connect(_on_evolve)
+	add_child(evolve_btn)
 	
 	# Pet sprite
 	pet_sprite = Sprite2D.new()
-	pet_sprite.position = Vector2(240, 230)
-	pet_sprite.scale = Vector2(1.2, 1.2)
+	pet_sprite.position = Vector2(180, 280)
+	pet_sprite.scale = Vector2(1.0, 1.0)
 	add_child(pet_sprite)
 	
 	# Message
 	message_label = Label.new()
-	message_label.position = Vector2(50, 200)
-	message_label.size = Vector2(380, 25)
+	message_label.position = Vector2(60, 230)
+	message_label.size = Vector2(240, 25)
 	message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	message_label.add_theme_font_size_override("font_size", 14)
 	add_child(message_label)
 	
-	# Action buttons
-	var btn_info = [
-		["🍗", Vector2(10, 320), _on_feed_pressed],
-		["🎾", Vector2(80, 320), _on_play_pressed],
-		["🧼", Vector2(150, 320), _on_clean_pressed],
-		["💤", Vector2(220, 320), _on_sleep_pressed],
-		["💊", Vector2(290, 320), _on_medicine_pressed],
-		["🪑", Vector2(360, 320), _on_rest_pressed],
-		["⚡", Vector2(80, 365), _on_schmeg_pressed],
+	# Action buttons - row 1
+	var row1 = [
+		["🍗", Vector2(10, 400), _on_feed],
+		["🎾", Vector2(95, 400), _on_play],
+		["🧼", Vector2(180, 400), _on_clean],
+		["💤", Vector2(265, 400), _on_sleep]
 	]
-	for info in btn_info:
-		var btn = Button.new()
-		btn.text = info[0]
-		btn.position = info[1]
-		btn.size = Vector2(60, 35)
-		btn.pressed.connect(info[2])
-		add_child(btn)
-		buttons.append(btn)
+	for r in row1:
+		var b = Button.new()
+		b.text = r[0]
+		b.position = r[1]
+		b.size = Vector2(75, 40)
+		b.pressed.connect(r[2])
+		add_child(b)
+		buttons.append(b)
 	
-	# Pet area
+	# Action buttons - row 2
+	var row2 = [
+		["💊", Vector2(10, 450), _on_medicine],
+		["⚡", Vector2(95, 450), _on_schmeg],
+		["🪑", Vector2(180, 450), _on_rest]
+	]
+	for r in row2:
+		var b = Button.new()
+		b.text = r[0]
+		b.position = r[1]
+		b.size = Vector2(75, 40)
+		b.pressed.connect(r[2])
+		add_child(b)
+		buttons.append(b)
+	
+	# Pet tap area
 	var area = Area2D.new()
 	var col = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
 	shape.size = Vector2(80, 80)
 	col.shape = shape
 	area.add_child(col)
-	area.position = Vector2(240, 230)
+	area.position = Vector2(180, 280)
 	area.input_event.connect(_on_pet_tap)
 	add_child(area)
 
@@ -243,7 +278,7 @@ func _update_stats():
 	
 	if randf() < 0.00005:
 		if poop_list.size() < 5:
-			poop_list.append({"is_golden": randf() < 0.05, "x": 50 + randf() * 300, "y": 280 + randf() * 50})
+			poop_list.append({"is_golden": randf() < 0.05})
 			poop_count = poop_list.size()
 
 func _check_evolution():
@@ -280,34 +315,37 @@ func _check_death():
 		return
 	if hunger <= 0:
 		is_ghost = true
-		show_message("GHOST MODE")
+		show_message("GHOST MODE!")
 		current_location = "tomb"
 		_load_bg()
 
 func _update_ui():
 	var vals = [hunger, happiness, cleanliness, energy]
-	var icons = ["🍗 ", "💛 ", "✨ ", "⚡ "]
-	var colors = [Color(1, 0.6, 0.4), Color(1, 0.5, 0.6), Color(0.5, 0.9, 1), Color(1, 0.9, 0.4)]
+	var colors = [Color(1, 0.5, 0.3), Color(1, 0.4, 0.5), Color(0.4, 0.8, 1), Color(1, 0.85, 0.3)]
+	
 	for i in range(4):
-		stats_labels[i].text = icons[i] + str(int(vals[i]))
-		stats_labels[i].modulate = Color.RED if vals[i] < 30 else colors[i]
-		# Progress bar
-		var bar_w = 80.0 * (vals[i] / 100.0)
-		stats_bars[i].size.x = max(1, bar_w)
-		stats_bars[i].modulate = Color.RED if vals[i] < 30 else colors[i]
+		stats_labels[i].text = str(int(vals[i])) + "%"
+		var bar_w = 200.0 * float(vals[i]) / 100.0)
+		stats_bars[i].custom_minimum_size.x = max(1, bar_w)
+		if vals[i] < 30:
+			stats_bars[i].modulate = Color.RED
+		else:
+			stats_bars[i].modulate = colors[i]
 	
-	var age_str = "%dh" % (age_minutes / 60)
+	var age_str = str(age_minutes / 60) + "h"
 	if age_minutes >= 1440:
-		age_str = "%dd" % (age_minutes / 1440)
-	age_label.text = "Age: %s | Lv %d" % [age_str, level]
+		age_str = str(age_minutes / 1440) + "d"
+	age_label.text = "Age: " + age_str + " | LV " + str(level)
 	
-	xp_label.text = "XP: %d/%d" % [xp, xp_needed]
+	if is_ghost:
+		stage_label.text = "GHOST"
+		stage_label.modulate = Color(0.7, 0.7, 0.8)
+	else:
+		var stages = ["EGG", "BABY", "GOOD", "BAD", "BULK", "ELDER"]
+		stage_label.text = stages[current_stage]
+		stage_label.modulate = Color.WHITE
 	
-	var stage_names = ["EGG", "BABY", "GOOD", "BAD", "ADULT", "ELDER"]
-	stage_label.text = stage_names[current_stage]
-	
-	location_btn.text = "📍"
-	egg_label.visible = has_egg
+	location_btn.text = "📍 " + current_location.to_upper()
 	
 	var dis = is_sleeping or is_ghost or has_egg
 	buttons[0].disabled = dis
@@ -318,6 +356,11 @@ func _update_ui():
 	buttons[6].disabled = is_sleeping
 	buttons[3].disabled = is_ghost
 	buttons[3].text = "☀️" if is_sleeping else "💤"
+	
+	# Update collection
+	var col_text = ["Fed: " + str(total_feeds), "Played: " + str(total_plays), "Cleaned: " + str(total_cleans), "Golden: " + str(poop_count), "Lv: " + str(level)]
+	for i in range(col_text.size()):
+		collection_labels[i].text = col_text[i]
 	
 	location_menu.visible = false
 	_update_sprite()
@@ -351,6 +394,11 @@ func show_message(text):
 
 func _show_location_menu():
 	location_menu.visible = not location_menu.visible
+	collection_panel.visible = false
+
+func _toggle_collection():
+	collection_panel.visible = not collection_panel.visible
+	location_menu.visible = false
 
 func _set_location(loc):
 	current_location = loc
@@ -358,7 +406,7 @@ func _set_location(loc):
 	_load_bg()
 	show_message(loc.to_upper())
 
-func _on_feed_pressed():
+func _on_feed():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	hunger = min(100.0, hunger + 30)
@@ -367,7 +415,7 @@ func _on_feed_pressed():
 	_add_xp(10)
 	show_message("Yum!")
 
-func _on_play_pressed():
+func _on_play():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	if energy < 10:
@@ -379,7 +427,7 @@ func _on_play_pressed():
 	_add_xp(15)
 	show_message("Fun!")
 
-func _on_clean_pressed():
+func _on_clean():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	cleanliness = 100.0
@@ -390,32 +438,32 @@ func _on_clean_pressed():
 	_add_xp(10)
 	show_message("Clean!")
 
-func _on_sleep_pressed():
+func _on_sleep():
 	if has_egg or is_ghost:
 		return
 	is_sleeping = not is_sleeping
 	show_message("Goodnight!" if is_sleeping else "Good morning!")
 
-func _on_medicine_pressed():
+func _on_medicine():
 	if has_egg or is_ghost or not is_sick:
 		return
 	is_sick = false
 	happiness = min(100.0, happiness + 20)
 	show_message("Cured!")
 
-func _on_rest_pressed():
-	if has_egg or is_ghost or is_sleeping:
-		return
-	energy = min(100.0, energy + 15)
-	show_message("+15 Energy!")
-
-func _on_schmeg_pressed():
+func _on_schmeg():
 	if has_egg or is_ghost or is_sleeping:
 		return
 	energy = min(100.0, energy + 30)
 	show_message("Energy!")
 
-func _on_evolve_pressed():
+func _on_rest():
+	if has_egg or is_ghost or is_sleeping:
+		return
+	energy = min(100.0, energy + 15)
+	show_message("+15 Energy!")
+
+func _on_evolve():
 	if evolution_pending == "":
 		return
 	match evolution_pending:
@@ -432,7 +480,7 @@ func _on_pet_tap(viewport, event, shape_idx):
 			if egg_hatch_time > 0:
 				egg_hatch_time -= 30
 				var now = Time.get_unix_time_from_system()
-				show_message("%d min!" % max(0, ceil((egg_hatch_time - now) / 60.0)))
+				show_message(str(max(0, ceil((egg_hatch_time - now) / 60.0))) + " min!")
 			return
 		if is_ghost:
 			return
