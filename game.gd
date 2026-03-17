@@ -34,6 +34,7 @@ var age_label
 var stage_label
 var egg_label
 var stats_labels = []
+var stats_bars = []
 var xp_label
 var message_label
 var location_btn
@@ -98,15 +99,30 @@ func _build_ui():
 	
 	# Stats
 	var stat_data = [
-		["🍗", Vector2(10, 55), Color(1, 0.6, 0.4)],
-		["💛", Vector2(100, 55), Color(1, 0.5, 0.6)],
-		["✨", Vector2(190, 55), Color(0.5, 0.9, 1)],
-		["⚡", Vector2(280, 55), Color(1, 0.9, 0.4)]
+		["🍗", Vector2(10, 50), Color(1, 0.6, 0.4)],
+		["💛", Vector2(100, 50), Color(1, 0.5, 0.6)],
+		["✨", Vector2(190, 50), Color(0.5, 0.9, 1)],
+		["⚡", Vector2(280, 50), Color(1, 0.9, 0.4)]
 	]
-	for d in stat_data:
+	for i in range(stat_data.size()):
+		var d = stat_data[i]
+		# Bar background
+		var bar_bg = ColorRect.new()
+		bar_bg.color = Color(0.2, 0.2, 0.2)
+		bar_bg.position = Vector2(d[1].x, d[1].y + 15)
+		bar_bg.size = Vector2(80, 8)
+		add_child(bar_bg)
+		# Bar fill
+		var bar = ColorRect.new()
+		bar.color = d[2]
+		bar.position = Vector2(d[1].x, d[1].y + 15)
+		bar.size = Vector2(80, 8)
+		add_child(bar)
+		stats_bars.append(bar)
+		# Label
 		var lbl = Label.new()
 		lbl.text = d[0] + " 100"
-		lbl.position = d[1]
+		lbl.position = Vector2(d[1].x, d[1].y - 5)
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.modulate = d[2]
 		add_child(lbl)
@@ -275,6 +291,10 @@ func _update_ui():
 	for i in range(4):
 		stats_labels[i].text = icons[i] + str(int(vals[i]))
 		stats_labels[i].modulate = Color.RED if vals[i] < 30 else colors[i]
+		# Progress bar
+		var bar_w = 80.0 * (vals[i] / 100.0)
+		stats_bars[i].size.x = max(1, bar_w)
+		stats_bars[i].modulate = Color.RED if vals[i] < 30 else colors[i]
 	
 	var age_str = "%dh" % (age_minutes / 60)
 	if age_minutes >= 1440:
