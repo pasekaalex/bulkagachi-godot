@@ -1,57 +1,49 @@
 extends Node2D
 
-# ══════════════════════════════════════════════════════════════════════════════
-# BULKAGACHI - Godot 4.x
-# ══════════════════════════════════════════════════════════════════════════════
-
-# ENUMS
 enum Stage { EGG, BABY, TEEN_GOOD, TEEN_BAD, ADULT, ELDER }
 
-# GAME STATE
-var pet_name: String = "Bulk"
-var hunger: float = 100.0
-var happiness: float = 100.0
-var cleanliness: float = 100.0
-var energy: float = 100.0
-var level: int = 1
-var xp: int = 0
-var xp_needed: int = 75
-var birth_time: int = 0
-var age_minutes: int = 0
-var current_stage: Stage = Stage.EGG
-var evolution_pending: String = ""
-var is_sleeping: bool = false
-var is_sick: bool = false
-var is_ghost: bool = false
-var poop_count: int = 0
-var poop_list: Array = []
-var has_egg: bool = true
-var egg_start_time: int = 0
-var egg_hatch_time: int = 0
-var current_location: String = "cabin"
-var total_plays: int = 0
-var total_feeds: int = 0
-var total_cleans: int = 0
+var pet_name = "Bulk"
+var hunger = 100.0
+var happiness = 100.0
+var cleanliness = 100.0
+var energy = 100.0
+var level = 1
+var xp = 0
+var xp_needed = 75
+var birth_time = 0
+var age_minutes = 0
+var current_stage = Stage.EGG
+var evolution_pending = ""
+var is_sleeping = false
+var is_sick = false
+var is_ghost = false
+var poop_count = 0
+var poop_list = []
+var has_egg = true
+var egg_start_time = 0
+var egg_hatch_time = 0
+var current_location = "cabin"
+var total_plays = 0
+var total_feeds = 0
+var total_cleans = 0
 
-# UI Elements
-var pet_sprite: Sprite2D
-var bg_sprite: Sprite2D
-var title_label: Label
-var age_label: Label
-var stage_label: Label
-var egg_label: Label
-var stats_labels: Array = []
-var xp_label: Label
-var message_label: Label
-var buttons: Array = []
-var location_btn: Button
-var evolve_btn: Button
-var poop_container: VBoxContainer
+var pet_sprite
+var bg_sprite
+var title_label
+var age_label
+var stage_label
+var egg_label
+var stats_labels = []
+var xp_label
+var message_label
+var buttons = []
+var location_btn
+var evolve_btn
+var poop_container
 
 const SPRITE_PATH = "res://assets/sprites/"
-const BG_PATH = "res://assets/sprites/"
 
-func _ready() -> void:
+func _ready():
 	randomize()
 	_build_ui()
 	_load_game()
@@ -61,13 +53,12 @@ func _ready() -> void:
 		has_egg = false
 	_update_ui()
 
-func _process(_delta: float) -> void:
+func _process(delta):
 	if has_egg:
 		var now = Time.get_unix_time_from_system()
 		if now >= egg_hatch_time:
 			_hatch_egg()
 		var elapsed = now - egg_start_time
-		var progress = min(elapsed / 3600.0, 1.0)
 		pet_sprite.position.y = 300 + sin(now * 3) * 5
 		egg_label.text = "Hatching in %d min..." % max(0, ceil((egg_hatch_time - now) / 60.0))
 		return
@@ -79,34 +70,29 @@ func _process(_delta: float) -> void:
 	_update_ui()
 	_save_game()
 
-func _build_ui() -> void:
-	# Background - scaled to fit
+func _build_ui():
 	bg_sprite = Sprite2D.new()
 	bg_sprite.position = Vector2(270, 500)
 	bg_sprite.scale = Vector2(0.5, 0.5)
 	add_child(bg_sprite)
 	_load_bg()
 	
-	# Title
 	title_label = Label.new()
-	title_label.text = "🐣 BULKAGACHI"
+	title_label.text = "BULKAGACHI"
 	title_label.position = Vector2(20, 15)
 	title_label.add_theme_font_size_override("font_size", 20)
 	add_child(title_label)
 	
-	# Stage label
 	stage_label = Label.new()
 	stage_label.position = Vector2(420, 15)
 	stage_label.add_theme_font_size_override("font_size", 14)
 	add_child(stage_label)
 	
-	# Age
 	age_label = Label.new()
 	age_label.position = Vector2(20, 40)
 	age_label.add_theme_font_size_override("font_size", 14)
 	add_child(age_label)
 	
-	# Stats row
 	var stat_names = ["🍗", "💛", "✨", "⚡"]
 	var stat_colors = [Color(1, 0.6, 0.4), Color(1, 0.5, 0.6), Color(0.5, 0.9, 1), Color(1, 0.9, 0.4)]
 	for i in range(4):
@@ -118,14 +104,12 @@ func _build_ui() -> void:
 		add_child(lbl)
 		stats_labels.append(lbl)
 	
-	# XP
 	xp_label = Label.new()
 	xp_label.text = "XP: 0/75"
 	xp_label.position = Vector2(20, 90)
 	xp_label.add_theme_font_size_override("font_size", 12)
 	add_child(xp_label)
 	
-	# Location button
 	location_btn = Button.new()
 	location_btn.text = "📍 Cabin"
 	location_btn.position = Vector2(20, 115)
@@ -133,7 +117,6 @@ func _build_ui() -> void:
 	location_btn.pressed.connect(_on_location_pressed)
 	add_child(location_btn)
 	
-	# Evolve button
 	evolve_btn = Button.new()
 	evolve_btn.text = "✨ EVOLVE"
 	evolve_btn.position = Vector2(380, 115)
@@ -142,7 +125,6 @@ func _build_ui() -> void:
 	evolve_btn.pressed.connect(_on_evolve_pressed)
 	add_child(evolve_btn)
 	
-	# Egg label
 	egg_label = Label.new()
 	egg_label.text = "Tap egg to check..."
 	egg_label.position = Vector2(150, 200)
@@ -150,18 +132,15 @@ func _build_ui() -> void:
 	egg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(egg_label)
 	
-	# Pet sprite - smaller, centered
 	pet_sprite = Sprite2D.new()
 	pet_sprite.position = Vector2(240, 280)
 	pet_sprite.scale = Vector2(1.5, 1.5)
 	add_child(pet_sprite)
 	
-	# Poop container
 	poop_container = VBoxContainer.new()
 	poop_container.position = Vector2(50, 380)
 	add_child(poop_container)
 	
-	# Message
 	message_label = Label.new()
 	message_label.position = Vector2(70, 250)
 	message_label.size = Vector2(340, 30)
@@ -169,7 +148,6 @@ func _build_ui() -> void:
 	message_label.add_theme_font_size_override("font_size", 16)
 	add_child(message_label)
 	
-	# Action buttons - bottom of screen
 	var btn_data = [
 		["🍗", Vector2(15, 500), _on_feed_pressed],
 		["🎾", Vector2(105, 500), _on_play_pressed],
@@ -189,7 +167,6 @@ func _build_ui() -> void:
 		add_child(btn)
 		buttons.append(btn)
 	
-	# Make pet clickable - use input event on area
 	var pet_area = Area2D.new()
 	var collision = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
@@ -200,15 +177,15 @@ func _build_ui() -> void:
 	pet_area.input_event.connect(_on_pet_input)
 	add_child(pet_area)
 
-func _load_bg() -> void:
+func _load_bg():
 	var name = "bg-cabin.png"
 	if current_location != "cabin":
 		name = "bg-" + current_location + ".png"
-	var path = BG_PATH + name
+	var path = SPRITE_PATH + name
 	if ResourceLoader.exists(path):
 		bg_sprite.texture = load(path)
 
-func _update_stats() -> void:
+func _update_stats():
 	if is_sleeping:
 		energy = min(100.0, energy + 0.015)
 		if energy >= 100:
@@ -223,22 +200,24 @@ func _update_stats() -> void:
 	if randf() < 0.00008:
 		_spawn_poop()
 
-func _spawn_poop() -> void:
+func _spawn_poop():
 	if poop_list.size() < 8:
 		poop_list.append({"is_golden": randf() < 0.05})
 		poop_count = poop_list.size()
 		_update_poops()
 
-func _update_poops() -> void:
+func _update_poops():
 	for c in poop_container.get_children():
 		c.queue_free()
 	for p in poop_list:
 		var lbl = Label.new()
-		lbl.text = "✨💩" if p.get("is_golden", false) else "💩"
+		lbl.text = "💩"
+		if p.get("is_golden", false):
+			lbl.text = "✨💩"
 		lbl.add_theme_font_size_override("font_size", 18)
 		poop_container.add_child(lbl)
 
-func _check_evolution() -> void:
+func _check_evolution():
 	if evolution_pending != "" or birth_time == 0:
 		return
 	var hours = age_minutes / 60
@@ -251,13 +230,13 @@ func _check_evolution() -> void:
 			if hours >= 24:
 				evolution_pending = "ADULT"
 				show_message("✨ ADULT READY!")
-	Stage.ADULT:
+		Stage.ADULT:
 			if hours >= 168:
 				evolution_pending = "ELDER"
 				show_message("✨ ELDER READY!")
 	evolve_btn.visible = evolution_pending != ""
 
-func _hatch_egg() -> void:
+func _hatch_egg():
 	has_egg = false
 	birth_time = Time.get_unix_time_from_system()
 	age_minutes = 0
@@ -265,9 +244,9 @@ func _hatch_egg() -> void:
 	happiness = 100
 	energy = 100
 	_add_xp(25)
-	show_message("🥚 WELCOME " + pet_name + "!")
+	show_message("🥚 WELCOME!")
 
-func _check_death() -> void:
+func _check_death():
 	if is_ghost:
 		return
 	if hunger <= 0:
@@ -276,56 +255,48 @@ func _check_death() -> void:
 		current_location = "tomb"
 		_load_bg()
 
-func _update_ui() -> void:
-	# Stats
+func _update_ui():
 	var values = [hunger, happiness, cleanliness, energy]
+	var icons = ["🍗 ", "💛 ", "✨ ", "⚡ "]
+	var colors = [Color(1, 0.6, 0.4), Color(1, 0.5, 0.6), Color(0.5, 0.9, 1), Color(1, 0.9, 0.4)]
 	for i in range(4):
-		stats_labels[i].text = ["🍗 ", "💛 ", "✨ ", "⚡ "[i] + str(int(values[i]))
+		stats_labels[i].text = icons[i] + str(int(values[i]))
 		if values[i] < 30:
 			stats_labels[i].modulate = Color.RED
 		else:
-			stats_labels[i].modulate = [Color(1, 0.6, 0.4), Color(1, 0.5, 0.6), Color(0.5, 0.9, 1), Color(1, 0.9, 0.4)][i]
+			stats_labels[i].modulate = colors[i]
 	
-	# Age
 	var age_str = "%dh" % (age_minutes / 60)
 	if age_minutes >= 1440:
 		age_str = "%dd" % (age_minutes / 1440)
 	age_label.text = "Age: %s | Lv %d" % [age_str, level]
 	
-	# XP
 	xp_label.text = "XP: %d/%d" % [xp, xp_needed]
 	
-	# Stage
 	match current_stage:
-		Stage.EGG: stage_label.text = "🥚 EGG"
-		Stage.BABY: stage_label.text = "🐣 BABY"
-		Stage.TEEN_GOOD: stage_label.text = "🐥 GOOD"
-		Stage.TEEN_BAD: stage_label.text = "🐥 BAD"
-		Stage.ADULT: stage_label.text = "🐓 ADULT"
-		Stage.ELDER: stage_label.text = "🧓 ELDER"
+		0: stage_label.text = "🥚 EGG"
+		1: stage_label.text = "🐣 BABY"
+		2: stage_label.text = "🐥 GOOD"
+		3: stage_label.text = "🐥 BAD"
+		4: stage_label.text = "🐓 ADULT"
+		5: stage_label.text = "🧓 ELDER"
 	
-	# Location
 	location_btn.text = "📍 " + current_location.capitalize()
-	
-	# Egg label visibility
 	egg_label.visible = has_egg
 	
-	# Buttons
 	var disabled = is_sleeping or is_ghost or has_egg
-	buttons[0].disabled = disabled  # feed
-	buttons[1].disabled = disabled  # play
-	buttons[2].disabled = disabled  # clean
-	buttons[4].disabled = not is_sick  # medicine
-	buttons[5].disabled = is_sleeping  # rest
-	buttons[6].disabled = is_sleeping  # schmeg
-	buttons[3].disabled = is_ghost  # sleep
-	
+	buttons[0].disabled = disabled
+	buttons[1].disabled = disabled
+	buttons[2].disabled = disabled
+	buttons[4].disabled = not is_sick
+	buttons[5].disabled = is_sleeping
+	buttons[6].disabled = is_sleeping
+	buttons[3].disabled = is_ghost
 	buttons[3].text = "☀️" if is_sleeping else "💤"
 	
-	# Sprite
 	_update_sprite()
 
-func _update_sprite() -> void:
+func _update_sprite():
 	var mood = "happy"
 	if has_egg:
 		mood = "egg"
@@ -342,26 +313,25 @@ func _update_sprite() -> void:
 	
 	var sprite_name = ""
 	match current_stage:
-		Stage.EGG: sprite_name = "egg.png"
-		Stage.BABY: sprite_name = "baby-" + mood + ".png"
-		Stage.TEEN_GOOD: sprite_name = "teen-good-" + mood + ".png"
-		Stage.TEEN_BAD: sprite_name = "teen-bad-" + mood + ".png"
-		Stage.ADULT: sprite_name = "bulk-" + mood + ".png"
-		Stage.ELDER: sprite_name = "elder-" + mood + ".png"
+		0: sprite_name = "egg.png"
+		1: sprite_name = "baby-" + mood + ".png"
+		2: sprite_name = "teen-good-" + mood + ".png"
+		3: sprite_name = "teen-bad-" + mood + ".png"
+		4: sprite_name = "bulk-" + mood + ".png"
+		5: sprite_name = "elder-" + mood + ".png"
 	
 	var path = SPRITE_PATH + sprite_name
 	if ResourceLoader.exists(path):
 		pet_sprite.texture = load(path)
 
-func show_message(text: String) -> void:
+func show_message(text):
 	message_label.text = text
 	get_tree().create_timer(2.5).timeout.connect(func(): 
 		if message_label.text == text:
 			message_label.text = ""
 	)
 
-# ACTIONS
-func _on_feed_pressed() -> void:
+func _on_feed_pressed():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	hunger = min(100.0, hunger + 30)
@@ -370,7 +340,7 @@ func _on_feed_pressed() -> void:
 	_add_xp(10)
 	show_message("Yum!")
 
-func _on_play_pressed() -> void:
+func _on_play_pressed():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	if energy < 10:
@@ -382,7 +352,7 @@ func _on_play_pressed() -> void:
 	_add_xp(15)
 	show_message("Fun!")
 
-func _on_clean_pressed() -> void:
+func _on_clean_pressed():
 	if has_egg or is_sleeping or is_ghost:
 		return
 	cleanliness = 100.0
@@ -394,7 +364,7 @@ func _on_clean_pressed() -> void:
 	_update_poops()
 	show_message("Sparkling clean!")
 
-func _on_sleep_pressed() -> void:
+func _on_sleep_pressed():
 	if has_egg or is_ghost:
 		return
 	is_sleeping = not is_sleeping
@@ -403,33 +373,33 @@ func _on_sleep_pressed() -> void:
 	else:
 		show_message("Good morning!")
 
-func _on_medicine_pressed() -> void:
+func _on_medicine_pressed():
 	if has_egg or is_ghost or not is_sick:
 		return
 	is_sick = false
 	happiness = min(100.0, happiness + 20)
 	show_message("Cured!")
 
-func _on_rest_pressed() -> void:
+func _on_rest_pressed():
 	if has_egg or is_ghost or is_sleeping:
 		return
 	energy = min(100.0, energy + 15)
 	show_message("+15 Energy!")
 
-func _on_schmeg_pressed() -> void:
+func _on_schmeg_pressed():
 	if has_egg or is_ghost or is_sleeping:
 		return
 	energy = min(100.0, energy + 30)
 	show_message("⚡ Energy!")
 
-func _on_location_pressed() -> void:
+func _on_location_pressed():
 	var locations = ["cabin", "camp", "city", "beach", "mountain", "club"]
 	var idx = locations.find(current_location)
 	current_location = locations[(idx + 1) % locations.size()]
 	_load_bg()
 	show_message("📍 " + current_location.to_upper())
 
-func _on_evolve_pressed() -> void:
+func _on_evolve_pressed():
 	if evolution_pending == "":
 		return
 	match evolution_pending:
@@ -440,7 +410,7 @@ func _on_evolve_pressed() -> void:
 	evolve_btn.visible = false
 	show_message("✨ EVOLVED!")
 
-func _on_pet_input(_viewport, event, _shape_idx):
+func _on_pet_input(viewport, event, shape_idx):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if has_egg:
 			if egg_hatch_time > 0:
@@ -455,7 +425,7 @@ func _on_pet_input(_viewport, event, _shape_idx):
 		_add_xp(5)
 		show_message("❤️")
 
-func _add_xp(amount: int) -> void:
+func _add_xp(amount):
 	xp += amount
 	while xp >= xp_needed:
 		xp -= xp_needed
@@ -463,7 +433,7 @@ func _add_xp(amount: int) -> void:
 		xp_needed = 50 + level * 25
 		show_message("LEVEL UP! LV %d" % level)
 
-func _save_game() -> void:
+func _save_game():
 	var save_data = {
 		"has_egg": has_egg,
 		"egg_start_time": egg_start_time,
@@ -490,7 +460,7 @@ func _save_game() -> void:
 	file.store_string(JSON.stringify(save_data))
 	file.close()
 
-func _load_game() -> void:
+func _load_game():
 	if not FileAccess.file_exists("user://bulkagachi_save.json"):
 		return
 	var file = FileAccess.open("user://bulkagachi_save.json", FileAccess.READ)
@@ -523,7 +493,7 @@ func _load_game() -> void:
 	if has_egg and Time.get_unix_time_from_system() >= egg_hatch_time:
 		_hatch_egg()
 
-func _start_new_game() -> void:
+func _start_new_game():
 	has_egg = true
 	egg_start_time = Time.get_unix_time_from_system()
 	egg_hatch_time = egg_start_time + 60 * 60
