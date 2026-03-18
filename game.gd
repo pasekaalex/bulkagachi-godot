@@ -232,7 +232,7 @@ func decrease_stats():
 		energy = min(100, energy + 0.02)
 		if energy >= 100:
 			is_sleeping = false
-			show("Good morning!")
+			msg("Good morning!")
 	else:
 		hunger = max(0, hunger - 0.001)
 		happiness = max(0, happiness - 0.0008)
@@ -241,7 +241,7 @@ func decrease_stats():
 	
 	if hunger <= 0 and not is_ghost:
 		is_ghost = true
-		show("GHOST MODE!")
+		msg("GHOST MODE!")
 
 func get_age_hours():
 	if has_egg or birth_time == 0:
@@ -256,51 +256,51 @@ func _toggle_location():
 func _set_location(loc):
 	location = loc
 	location_menu.visible = false
-	show(loc.to_upper())
+	msg(loc.to_upper())
 	update_all()
 
 func _on_feed():
 	hunger = min(100, hunger + 30)
 	energy = max(0, energy - 3)
 	level_xp(10)
-	show("Yum!")
+	msg("Yum!")
 
 func _on_play():
 	if energy < 10:
-		show("Too tired!")
+		msg("Too tired!")
 		return
 	happiness = min(100, happiness + 20)
 	energy = max(0, energy - 15)
 	level_xp(15)
-	show("Fun!")
+	msg("Fun!")
 
 func _on_clean():
 	cleanliness = 100
 	is_sick = false
 	level_xp(10)
-	show("Clean!")
+	msg("Clean!")
 
 func _on_sleep():
 	is_sleeping = not is_sleeping
-	show("Goodnight!" if is_sleeping else "Wake up!")
+	msg("Goodnight!" if is_sleeping else "Wake up!")
 
 func _on_meds():
 	if is_sick:
 		is_sick = false
 		happiness = min(100, happiness + 20)
-		show("Cured!")
+		msg("Cured!")
 
 func _on_schmeg():
 	energy = min(100, energy + 30)
-	show("Energy!")
+	msg("Energy!")
 
 func _on_rest():
 	energy = min(100, energy + 15)
-	show("+15 Energy!")
+	msg("+15 Energy!")
 
 func _on_evolve():
 	current_stage += 1
-	show("EVOLVED!")
+	msg("EVOLVED!")
 	update_all()
 
 func should_evolve():
@@ -318,7 +318,7 @@ func level_xp(amt):
 	if level > level * 100:
 		level = 1
 
-func show(text):
+func msg(text):
 	message.text = text
 	get_tree().create_timer(2.0).timeout.connect(func():
 		if message.text == text:
