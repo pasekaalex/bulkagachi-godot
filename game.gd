@@ -25,7 +25,6 @@ var location_btn: Button
 var evolve_btn: Button
 var location_menu: VBoxContainer
 var stat_bars = {}
-var stat_labels = {}
 var action_btns = {}
 
 const SPRITES = "res://assets/sprites/"
@@ -48,49 +47,48 @@ func _process(delta):
 	_save()
 
 func _build_ui():
-	# Background
+	# Background - fills screen
 	bg_sprite = Sprite2D.new()
 	bg_sprite.position = Vector2(180, 320)
 	bg_sprite.scale = Vector2(0.6, 0.6)
 	add_child(bg_sprite)
 	
-	# Pet - small!
+	# Pet - VERY small!
 	pet_sprite = Sprite2D.new()
 	pet_sprite.position = Vector2(180, 280)
-	pet_sprite.scale = Vector2(0.15, 0.15)
+	pet_sprite.scale = Vector2(0.1, 0.1)  # 10% of 992px = ~100px
 	add_child(pet_sprite)
 	
-	# Header - LV | STAGE
+	# Header
 	var info = Label.new()
 	info.position = Vector2(10, 8)
 	info.add_theme_font_size_override("font_size", 14)
 	info.name = "info"
 	add_child(info)
 	
-	# Stats - labels on LEFT, bars on RIGHT
-	var stats_y = 40
+	# Stats - BELOW the pet, not overlapping
+	var stats_y = 380  # Moved way down
 	var stat_names = ["HUNGER", "HAPPY", "CLEAN", "ENERGY"]
 	var stat_colors = [Color(1, 0.5, 0.3), Color(1, 0.4, 0.5), Color(0.4, 0.8, 1), Color(1, 0.85, 0.3)]
 	for i in range(4):
-		# Label on left
+		# Label
 		var lbl = Label.new()
 		lbl.text = stat_names[i]
 		lbl.position = Vector2(10, stats_y)
 		lbl.add_theme_font_size_override("font_size", 11)
 		add_child(lbl)
-		stat_labels[stat_names[i].to_lower()] = lbl
 		
-		# Bar on right
+		# Bar
 		var bar_bg = ColorRect.new()
 		bar_bg.color = Color(0.1, 0.1, 0.15)
 		bar_bg.position = Vector2(80, stats_y)
-		bar_bg.size = Vector2(160, 14)
+		bar_bg.size = Vector2(150, 14)
 		add_child(bar_bg)
 		
 		var bar_fill = ColorRect.new()
 		bar_fill.color = stat_colors[i]
 		bar_fill.position = Vector2(80, stats_y)
-		bar_fill.size = Vector2(160, 14)
+		bar_fill.size = Vector2(150, 14)
 		bar_fill.name = "bar"
 		bar_bg.add_child(bar_fill)
 		stat_bars[stat_names[i].to_lower()] = bar_fill
@@ -126,7 +124,7 @@ func _build_ui():
 		b.pressed.connect(func(): _set_loc(loc))
 		location_menu.add_child(b)
 	
-	# Action buttons - 2 rows of 4
+	# Action buttons - bottom of screen
 	var actions = [
 		["FEED", "🍗", 10, 460],
 		["PLAY", "🎾", 95, 460],
@@ -146,9 +144,9 @@ func _build_ui():
 		add_child(btn)
 		action_btns[a[0]] = btn
 	
-	# Message
+	# Message - above pet
 	msg_label = Label.new()
-	msg_label.position = Vector2(60, 180)
+	msg_label.position = Vector2(60, 150)
 	msg_label.size = Vector2(240, 25)
 	msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	msg_label.add_theme_font_size_override("font_size", 14)
@@ -279,7 +277,7 @@ func _new_game():
 	birth_time = Time.get_unix_time_from_system() + 3600
 
 func update_display():
-	# Background - use night variants!
+	# Background
 	var bg_name = "bg-cabin.png"
 	if is_ghost:
 		bg_name = "bg-tomb-night.png"
@@ -312,11 +310,11 @@ func update_display():
 	var i = 0
 	for k in stats:
 		var v = stats[k]
-		stat_bars[k].size.x = max(1, 160 * v / 100)
+		stat_bars[k].size.x = max(1, 150 * v / 100)
 		stat_bars[k].modulate = Color.RED if v < 30 else colors[i]
 		i += 1
 	
-	# Info - LV | GHOST
+	# Info
 	var stages = ["EGG", "BABY", "TEEN", "BULK", "ELDER"]
 	var st = stages[current_stage]
 	if is_ghost: st = "GHOST"
