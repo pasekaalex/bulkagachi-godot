@@ -25,6 +25,7 @@ var location_btn: Button
 var evolve_btn: Button
 var location_menu: VBoxContainer
 var stat_bars = {}
+var stat_labels = {}
 var action_btns = {}
 
 const SPRITES = "res://assets/sprites/"
@@ -47,108 +48,105 @@ func _process(delta):
 	_save()
 
 func _build_ui():
-	# Background - cover entire screen
+	# Background
 	bg_sprite = Sprite2D.new()
 	bg_sprite.position = Vector2(180, 320)
 	bg_sprite.scale = Vector2(0.6, 0.6)
 	add_child(bg_sprite)
 	
-	# Pet - smaller, centered
+	# Pet - small!
 	pet_sprite = Sprite2D.new()
 	pet_sprite.position = Vector2(180, 280)
-	pet_sprite.scale = Vector2(0.25, 0.25)
+	pet_sprite.scale = Vector2(0.15, 0.15)
 	add_child(pet_sprite)
 	
-	# Title
-	var title = Label.new()
-	title.text = "BULKAGACHI"
-	title.position = Vector2(90, 8)
-	title.add_theme_font_size_override("font_size", 22)
-	add_child(title)
-	
-	# Info
+	# Header - LV | STAGE
 	var info = Label.new()
-	info.position = Vector2(10, 35)
-	info.add_theme_font_size_override("font_size", 12)
+	info.position = Vector2(10, 8)
+	info.add_theme_font_size_override("font_size", 14)
 	info.name = "info"
 	add_child(info)
 	
-	# Stats - moved down
-	var stats_y = 55
+	# Stats - labels on LEFT, bars on RIGHT
+	var stats_y = 40
 	var stat_names = ["HUNGER", "HAPPY", "CLEAN", "ENERGY"]
 	var stat_colors = [Color(1, 0.5, 0.3), Color(1, 0.4, 0.5), Color(0.4, 0.8, 1), Color(1, 0.85, 0.3)]
 	for i in range(4):
+		# Label on left
 		var lbl = Label.new()
 		lbl.text = stat_names[i]
 		lbl.position = Vector2(10, stats_y)
-		lbl.add_theme_font_size_override("font_size", 10)
+		lbl.add_theme_font_size_override("font_size", 11)
 		add_child(lbl)
+		stat_labels[stat_names[i].to_lower()] = lbl
 		
+		# Bar on right
 		var bar_bg = ColorRect.new()
 		bar_bg.color = Color(0.1, 0.1, 0.15)
-		bar_bg.position = Vector2(70, stats_y)
-		bar_bg.size = Vector2(180, 12)
+		bar_bg.position = Vector2(80, stats_y)
+		bar_bg.size = Vector2(160, 14)
 		add_child(bar_bg)
 		
 		var bar_fill = ColorRect.new()
 		bar_fill.color = stat_colors[i]
-		bar_fill.position = Vector2(70, stats_y)
-		bar_fill.size = Vector2(180, 12)
+		bar_fill.position = Vector2(80, stats_y)
+		bar_fill.size = Vector2(160, 14)
 		bar_fill.name = "bar"
 		bar_bg.add_child(bar_fill)
 		stat_bars[stat_names[i].to_lower()] = bar_fill
 		
-		stats_y += 16
+		stats_y += 18
 	
 	# Location button
 	location_btn = Button.new()
-	location_btn.text = "CABIN"
-	location_btn.position = Vector2(10, 125)
-	location_btn.size = Vector2(70, 24)
+	location_btn.text = "TRAVEL"
+	location_btn.position = Vector2(10, 115)
+	location_btn.size = Vector2(70, 26)
 	location_btn.pressed.connect(_toggle_loc_menu)
 	add_child(location_btn)
 	
 	# Evolve button
 	evolve_btn = Button.new()
 	evolve_btn.text = "EVOLVE"
-	evolve_btn.position = Vector2(260, 125)
-	evolve_btn.size = Vector2(70, 24)
+	evolve_btn.position = Vector2(260, 115)
+	evolve_btn.size = Vector2(70, 26)
 	evolve_btn.visible = false
 	evolve_btn.pressed.connect(_evolve)
 	add_child(evolve_btn)
 	
 	# Location menu
 	location_menu = VBoxContainer.new()
-	location_menu.position = Vector2(10, 150)
+	location_menu.position = Vector2(10, 142)
 	location_menu.visible = false
 	add_child(location_menu)
 	for loc in ["cabin", "camp", "city", "beach", "mountain", "club"]:
 		var b = Button.new()
 		b.text = loc
-		b.size = Vector2(70, 22)
+		b.size = Vector2(70, 24)
 		b.pressed.connect(func(): _set_loc(loc))
 		location_menu.add_child(b)
 	
-	# Action buttons - bottom of screen
+	# Action buttons - 2 rows of 4
 	var actions = [
-		["FEED", "🍗", 10, 470],
-		["PLAY", "🎾", 90, 470],
-		["CLEAN", "🧼", 170, 470],
-		["SLEEP", "💤", 250, 470],
-		["MEDS", "💊", 10, 520],
-		["SCHMEG", "⚡", 90, 520],
-		["REST", "🪑", 170, 520],
+		["FEED", "🍗", 10, 460],
+		["PLAY", "🎾", 95, 460],
+		["CLEAN", "🧼", 180, 460],
+		["SLEEP", "💤", 265, 460],
+		["MEDS", "💊", 10, 510],
+		["SCHMEG", "⚡", 95, 510],
+		["REST", "🪑", 180, 510],
+		["TRAVEL", "🌍", 265, 510],
 	]
 	for a in actions:
 		var btn = Button.new()
 		btn.text = a[1]
 		btn.position = Vector2(a[2], a[3])
-		btn.size = Vector2(70, 40)
+		btn.size = Vector2(75, 42)
 		btn.pressed.connect(_action.bind(a[0]))
 		add_child(btn)
 		action_btns[a[0]] = btn
 	
-	# Message - above pet
+	# Message
 	msg_label = Label.new()
 	msg_label.position = Vector2(60, 180)
 	msg_label.size = Vector2(240, 25)
@@ -190,6 +188,8 @@ func _action(act):
 		"REST":
 			energy = min(100, energy + 15)
 			_msg("+15 Energy!")
+		"TRAVEL":
+			_toggle_loc_menu()
 
 func _xp(amt):
 	level += amt
@@ -279,14 +279,15 @@ func _new_game():
 	birth_time = Time.get_unix_time_from_system() + 3600
 
 func update_display():
-	# Background
+	# Background - use night variants!
 	var bg_name = "bg-cabin.png"
-	if location == "camp": bg_name = "bg-camp-day.png"
-	elif location == "city": bg_name = "bg-city-day.png"
+	if is_ghost:
+		bg_name = "bg-tomb-night.png"
+	elif location == "camp": bg_name = "bg-camp-night.png"
+	elif location == "city": bg_name = "bg-city-night.png"
 	elif location == "beach": bg_name = "bg-beach.png"
 	elif location == "mountain": bg_name = "bg-mountain.png"
 	elif location == "club": bg_name = "bg-club.png"
-	if is_ghost: bg_name = "bg-tomb-day.png"
 	
 	var bg_path = SPRITES + bg_name
 	if ResourceLoader.exists(bg_path):
@@ -311,17 +312,15 @@ func update_display():
 	var i = 0
 	for k in stats:
 		var v = stats[k]
-		stat_bars[k].size.x = max(1, 180 * v / 100)
+		stat_bars[k].size.x = max(1, 160 * v / 100)
 		stat_bars[k].modulate = Color.RED if v < 30 else colors[i]
 		i += 1
 	
-	# Info
+	# Info - LV | GHOST
 	var stages = ["EGG", "BABY", "TEEN", "BULK", "ELDER"]
 	var st = stages[current_stage]
 	if is_ghost: st = "GHOST"
-	get_node("info").text = st + " | LV " + str(level) + " | " + str(age_hours) + "h"
-	
-	location_btn.text = location.to_upper()
+	get_node("info").text = "LV " + str(level) + " " + st
 	
 	# Buttons
 	var dis = is_sleeping or is_ghost or has_egg
@@ -339,3 +338,5 @@ func update_display():
 	if current_stage == 1 and age_hours >= 8: evolve_btn.visible = true
 	if current_stage == 2 and age_hours >= 24: evolve_btn.visible = true
 	if current_stage == 3 and age_hours >= 168: evolve_btn.visible = true
+	
+	location_menu.visible = false
