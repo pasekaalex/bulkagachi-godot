@@ -158,7 +158,7 @@ func _build_ui():
 	collection_btn.pressed.connect(_toggle_collection)
 	add_child(collection_btn)
 	
-	# Collection panel (hidden)
+	# Collection panel
 	collection_panel = PanelContainer.new()
 	collection_panel.position = Vector2(10, 50)
 	collection_panel.size = Vector2(340, 60)
@@ -174,7 +174,7 @@ func _build_ui():
 		col_vbox.add_child(l)
 		collection_labels.append(l)
 	
-	# Location menu (hidden)
+	# Location menu
 	location_menu = VBoxContainer.new()
 	location_menu.position = Vector2(10, 98)
 	location_menu.visible = false
@@ -325,7 +325,7 @@ func _update_ui():
 	
 	for i in range(4):
 		stats_labels[i].text = str(int(vals[i])) + "%"
-		var bar_w = 200.0 * float(vals[i]) / 100.0)
+		var bar_w = 200.0 * (vals[i] / 100.0)
 		stats_bars[i].custom_minimum_size.x = max(1, bar_w)
 		if vals[i] < 30:
 			stats_bars[i].modulate = Color.RED
