@@ -7,7 +7,7 @@ var cleanliness = 100.0
 var energy = 100.0
 var level = 1
 var age_hours = 0
-var current_stage = 1  # 0=egg, 1=baby, 2=teen, 3=adult, 4=elder
+var current_stage = 1
 var is_sleeping = false
 var is_sick = false
 var is_ghost = false
@@ -47,22 +47,23 @@ func _process(delta):
 	_save()
 
 func _build_ui():
-	# Background
+	# Background - cover entire screen
 	bg_sprite = Sprite2D.new()
-	bg_sprite.position = Vector2(180, 250)
-	bg_sprite.scale = Vector2(0.5, 0.5)
+	bg_sprite.position = Vector2(180, 320)
+	bg_sprite.scale = Vector2(0.6, 0.6)
 	add_child(bg_sprite)
 	
-	# Pet
+	# Pet - smaller, centered
 	pet_sprite = Sprite2D.new()
-	pet_sprite.position = Vector2(180, 250)
+	pet_sprite.position = Vector2(180, 280)
+	pet_sprite.scale = Vector2(0.5, 0.5)
 	add_child(pet_sprite)
 	
 	# Title
 	var title = Label.new()
 	title.text = "BULKAGACHI"
-	title.position = Vector2(100, 5)
-	title.add_theme_font_size_override("font_size", 24)
+	title.position = Vector2(90, 8)
+	title.add_theme_font_size_override("font_size", 22)
 	add_child(title)
 	
 	# Info
@@ -72,87 +73,87 @@ func _build_ui():
 	info.name = "info"
 	add_child(info)
 	
-	# Stats
-	var stats_y = 60
+	# Stats - moved down
+	var stats_y = 55
 	var stat_names = ["HUNGER", "HAPPY", "CLEAN", "ENERGY"]
 	var stat_colors = [Color(1, 0.5, 0.3), Color(1, 0.4, 0.5), Color(0.4, 0.8, 1), Color(1, 0.85, 0.3)]
 	for i in range(4):
 		var lbl = Label.new()
 		lbl.text = stat_names[i]
 		lbl.position = Vector2(10, stats_y)
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 10)
 		add_child(lbl)
 		
 		var bar_bg = ColorRect.new()
 		bar_bg.color = Color(0.1, 0.1, 0.15)
-		bar_bg.position = Vector2(80, stats_y)
-		bar_bg.size = Vector2(200, 14)
+		bar_bg.position = Vector2(70, stats_y)
+		bar_bg.size = Vector2(180, 12)
 		add_child(bar_bg)
 		
 		var bar_fill = ColorRect.new()
 		bar_fill.color = stat_colors[i]
-		bar_fill.position = Vector2(80, stats_y)
-		bar_fill.size = Vector2(200, 14)
+		bar_fill.position = Vector2(70, stats_y)
+		bar_fill.size = Vector2(180, 12)
 		bar_fill.name = "bar"
 		bar_bg.add_child(bar_fill)
 		stat_bars[stat_names[i].to_lower()] = bar_fill
 		
-		stats_y += 20
+		stats_y += 16
 	
 	# Location button
 	location_btn = Button.new()
 	location_btn.text = "CABIN"
-	location_btn.position = Vector2(10, 150)
-	location_btn.size = Vector2(80, 28)
+	location_btn.position = Vector2(10, 125)
+	location_btn.size = Vector2(70, 24)
 	location_btn.pressed.connect(_toggle_loc_menu)
 	add_child(location_btn)
 	
 	# Evolve button
 	evolve_btn = Button.new()
 	evolve_btn.text = "EVOLVE"
-	evolve_btn.position = Vector2(250, 150)
-	evolve_btn.size = Vector2(80, 28)
+	evolve_btn.position = Vector2(260, 125)
+	evolve_btn.size = Vector2(70, 24)
 	evolve_btn.visible = false
 	evolve_btn.pressed.connect(_evolve)
 	add_child(evolve_btn)
 	
 	# Location menu
 	location_menu = VBoxContainer.new()
-	location_menu.position = Vector2(10, 180)
+	location_menu.position = Vector2(10, 150)
 	location_menu.visible = false
 	add_child(location_menu)
 	for loc in ["cabin", "camp", "city", "beach", "mountain", "club"]:
 		var b = Button.new()
 		b.text = loc
-		b.size = Vector2(80, 24)
+		b.size = Vector2(70, 22)
 		b.pressed.connect(func(): _set_loc(loc))
 		location_menu.add_child(b)
 	
-	# Action buttons
+	# Action buttons - bottom of screen
 	var actions = [
-		["FEED", "🍗", 10, 350],
-		["PLAY", "🎾", 95, 350],
-		["CLEAN", "🧼", 180, 350],
-		["SLEEP", "💤", 265, 350],
-		["MEDS", "💊", 10, 400],
-		["SCHMEG", "⚡", 95, 400],
-		["REST", "🪑", 180, 400],
+		["FEED", "🍗", 10, 470],
+		["PLAY", "🎾", 90, 470],
+		["CLEAN", "🧼", 170, 470],
+		["SLEEP", "💤", 250, 470],
+		["MEDS", "💊", 10, 520],
+		["SCHMEG", "⚡", 90, 520],
+		["REST", "🪑", 170, 520],
 	]
 	for a in actions:
 		var btn = Button.new()
 		btn.text = a[1]
 		btn.position = Vector2(a[2], a[3])
-		btn.size = Vector2(75, 42)
+		btn.size = Vector2(70, 40)
 		btn.pressed.connect(_action.bind(a[0]))
 		add_child(btn)
 		action_btns[a[0]] = btn
 	
-	# Message
+	# Message - above pet
 	msg_label = Label.new()
-	msg_label.position = Vector2(60, 200)
-	msg_label.size = Vector2(240, 30)
+	msg_label.position = Vector2(60, 180)
+	msg_label.size = Vector2(240, 25)
 	msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	msg_label.add_theme_font_size_override("font_size", 16)
+	msg_label.add_theme_font_size_override("font_size", 14)
 	add_child(msg_label)
 
 func _action(act):
@@ -293,7 +294,6 @@ func update_display():
 	
 	# Pet
 	var stage_names = ["egg", "baby", "teen-good", "bulk", "elder"]
-	var moods = ["happy", "sad", "hungry", "sick", "sleep", "ghost", "tired"]
 	var mood = "happy"
 	if is_ghost: mood = "ghost"
 	elif is_sick: mood = "sick"
@@ -311,7 +311,7 @@ func update_display():
 	var i = 0
 	for k in stats:
 		var v = stats[k]
-		stat_bars[k].size.x = max(1, 200 * v / 100)
+		stat_bars[k].size.x = max(1, 180 * v / 100)
 		stat_bars[k].modulate = Color.RED if v < 30 else colors[i]
 		i += 1
 	
