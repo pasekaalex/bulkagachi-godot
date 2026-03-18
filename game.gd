@@ -56,7 +56,7 @@ func _build_ui():
 	# Pet - smaller, centered
 	pet_sprite = Sprite2D.new()
 	pet_sprite.position = Vector2(180, 280)
-	pet_sprite.scale = Vector2(0.5, 0.5)
+	pet_sprite.scale = Vector2(0.25, 0.25)
 	add_child(pet_sprite)
 	
 	# Title
